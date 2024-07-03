@@ -1,4 +1,4 @@
-use image::ImageError;
+use image::{DynamicImage, ImageError};
 
 use crate::Args;
 
@@ -21,26 +21,20 @@ fn char_from_luminance(luminance: f32) -> char {
     CHARS.chars().nth(low).unwrap()
 }
 
-pub fn convert_luminance(args: &Args) -> Result<(String, u32, u32), ImageError> {
-    let image = image::open(&args.image)?;
+pub fn convert_luminance(scaled: &DynamicImage) -> Result<Vec<String>, ImageError> {
+    let luminance = scaled.to_luma8();
 
-    let (w, h) = (image.width() as f32, image.height() as f32);
-    let image = image.resize_exact(
-        args.width, 
-        (h/w*args.width as f32 / args.font_aspect_ratio) as u32, 
-        image::imageops::FilterType::Nearest
-    );
-
-    let luminance = image.to_luma8();
-
-    let mut res = String::with_capacity((luminance.width() * luminance.height()) as usize);
+    // let mut res = String::with_capacity((luminance.width() * luminance.height()) as usize);
+    let mut res = Vec::with_capacity(luminance.height() as usize);
     for y in 0..luminance.height() {
+        res.push(String::with_capacity(luminance.width() as usize));
+        let cur = res.last_mut().unwrap();
         for x in 0..luminance.width() {
             let pixel = luminance.get_pixel(x, y);
             let luminance = pixel[0] as f32 / 255.0;
-            res.push(char_from_luminance(luminance));
+            cur.push(char_from_luminance(luminance));
         }
     }
 
-    return Ok((res, luminance.width(), luminance.height()));
+    return Ok(res);
 }

@@ -1,4 +1,5 @@
 mod luminance_converter;
+mod colored_printer;
 
 use clap::Parser;
 use image::{DynamicImage, ImageError};
@@ -14,7 +15,7 @@ struct Args {
     #[arg(short, long, default_value_t = 100)]
     width: u32,
 
-    /// Outputs the image in color
+    /// Outputs the image in color (ansi color escape sequences)
     #[arg(short, long)]
     colors: bool,
 
@@ -26,9 +27,13 @@ struct Args {
     #[arg(short, long)]
     luminance: bool,
 
+    /// Pixels mode
+    #[arg(short, long)]
+    pixels: bool,
+
     /// Edge detection mode
     #[arg(short, long)]
-    edge: bool,
+    edges: bool,
 
     /// Shapes detection mode
     #[arg(short, long)]
@@ -41,7 +46,11 @@ struct Args {
 
 impl Args {
     fn validate(&mut self) {
-        let modes = if self.luminance {1} else {0} + if self.edge {1} else {0} + if self.shapes {1} else {0};
+        let modes = 
+            if self.luminance {1} else {0} + 
+            if self.edges {1} else {0} + 
+            if self.pixels {1} else {0} + 
+            if self.shapes {1} else {0};
         if modes > 1 {
             eprintln!("Only one mode can be selected at a time");
             std::process::exit(1);
@@ -64,10 +73,12 @@ impl Args {
 
         let result = 
             if self.luminance {
-                luminance_converter::convert_luminance(&scaled)
-            } else if self.edge {
+                luminance_converter::convert_luminance(&self, &scaled)
+            } else if self.edges {
                 todo!()
-            } else {
+            } else if self.pixels {
+                todo!()
+            }else {
                 todo!()
             };
 
@@ -78,17 +89,13 @@ impl Args {
     }
 }
 
-fn print_with_colors(lines: &Vec<String>, image: &DynamicImage) {
-    todo!()
-}
-
 fn main() {
     let mut args = Args::parse();
     args.validate();
     match args.realize() {
         Ok((lines, image)) => {
             if args.colors {
-                print_with_colors(&lines, &image);
+                colored_printer::print_with_colors(&lines, &image);
             }
             else {
                 for line in lines {

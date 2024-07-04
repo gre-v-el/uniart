@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView, ImageError};
+use image::{GenericImageView, ImageError};
 
 use crate::{colored_printer::{color_to_code, reset_color, set_color}, Args};
 
@@ -27,7 +27,13 @@ fn char_from_luminance(luminance: f32, dense: bool) -> char {
     chars.chars().nth(low).unwrap()
 }
 
-pub fn print_luminance(args: &Args, scaled: &DynamicImage) -> Result<(), ImageError> {
+pub fn print_luminance(args: &Args) -> Result<(), ImageError> {
+    let scaled = args.image_file.as_ref().unwrap().resize_exact(
+        args.width,
+        args.height, 
+        image::imageops::FilterType::Nearest
+    );
+
     for y in 0..scaled.height() {
         for x in 0..scaled.width() {
             let pixel = scaled.get_pixel(x, y);

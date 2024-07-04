@@ -3,7 +3,7 @@ mod colored_printer;
 mod pixels_printer;
 
 use clap::Parser;
-use image::ImageError;
+use image::{DynamicImage, ImageError};
 
 /// CLI app to process images with various modes
 #[derive(Parser, Debug)]
@@ -32,6 +32,10 @@ struct Args {
     #[arg(short, long)]
     pixels: bool,
 
+    /// Double pixels mode
+    #[arg(short = 'q', long)]
+    double_pixels: bool,
+
     /// Edge detection mode
     #[arg(short, long)]
     edges: bool,
@@ -46,15 +50,22 @@ struct Args {
 
     /// Sets the aspect ratio of the terminal font
     #[arg(short, long, default_value_t = 2.0)]
-    font_aspect_ratio: f32,
+    aspect_ratio: f32,
+
+
+    #[clap(skip)]
+    height: u32,
+    #[clap(skip)]
+    image_file: Option<DynamicImage>,
 }
 
 impl Args {
-    fn validate(&mut self) {
+    fn validate(&mut self) -> Result<(), ImageError> {
         let modes = 
             if self.luminance {1} else {0} + 
             if self.edges {1} else {0} + 
             if self.pixels {1} else {0} + 
+            if self.double_pixels {1} else {0} + 
             if self.shapes {1} else {0};
         if modes > 1 {
             eprintln!("Only one mode can be selected at a time");
@@ -78,26 +89,25 @@ impl Args {
                 },
             }
         }
+
+        self.image_file = Some(image::open(&self.image)?);
+        let (w, h) = (self.image_file.as_ref().unwrap().width() as f32, self.image_file.as_ref().unwrap().height() as f32);
+        self.height = (h/w*self.width as f32 / self.aspect_ratio) as u32;
+
+        Ok(())
     }
 
     fn realize(&self) -> Result<(), ImageError> {
-        let image = image::open(&self.image)?;
-
-        let (w, h) = (image.width() as f32, image.height() as f32);
-        let scaled = image.resize_exact(
-            self.width,
-            (h/w*self.width as f32 / self.font_aspect_ratio) as u32, 
-            image::imageops::FilterType::Nearest
-        );
-
 
         if self.luminance {
-            luminance_printer::print_luminance(&self, &scaled)?;
+            luminance_printer::print_luminance(&self)?;
         } else if self.edges {
             todo!()
         } else if self.pixels {
-            pixels_printer::print_pixels(&scaled)?;
-        }else {
+            pixels_printer::print_pixels(&self)?;
+        } else if self.double_pixels {
+            pixels_printer::print_double_pixels(&self)?;
+        } else if self.shapes {
             todo!()
         }
 
@@ -107,9 +117,11 @@ impl Args {
 
 fn main() {
     let mut args = Args::parse();
-    args.validate();
-    match args.realize() {
-        Ok(_) => {},
-        Err(e) => eprintln!("{}", e)
+
+    if let Err(e) = args.validate() {
+        eprintln!("{}", e);
+    }
+    if let Err(e) = args.realize() {
+        eprintln!("{}", e);
     }
 }

@@ -17,3 +17,7 @@ pub fn reset_color() {
 pub fn set_color(code: u8) {
     print!("\x1b[38;5;{code}m")
 }
+
+pub fn set_color_bg(fg_code: u8, bg_code: u8) {
+    print!("\x1b[38;5;{fg_code}m\x1b[48;5;{bg_code}m")
+}

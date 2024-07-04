@@ -12,7 +12,7 @@ struct Args {
     /// Path to the image file
     image: String,
 
-    /// Sets the width of the output
+    /// Sets the width of the output. If set to 0 it will fill the terminal width.
     #[arg(short, long, default_value_t = 100)]
     width: u32,
 
@@ -68,6 +68,16 @@ impl Args {
             eprintln!("Dense palette only works for luminance and edges modes");
             std::process::exit(1);
         }
+
+        if self.width == 0 {
+            self.width = match term_size::dimensions() {
+                Some((w, _)) => w as u32,
+                None => {
+                    eprintln!("Could not determine terminal width. Setting width to 100");
+                    100
+                },
+            }
+        }
     }
 
     fn realize(&self) -> Result<(), ImageError> {
@@ -86,7 +96,7 @@ impl Args {
         } else if self.edges {
             todo!()
         } else if self.pixels {
-            todo!()
+            pixels_printer::print_pixels(&scaled)?;
         }else {
             todo!()
         }

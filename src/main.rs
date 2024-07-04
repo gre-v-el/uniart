@@ -1,5 +1,6 @@
 mod luminance_printer;
 mod colored_printer;
+mod pixels_printer;
 
 use clap::Parser;
 use image::ImageError;
@@ -39,6 +40,10 @@ struct Args {
     #[arg(short, long)]
     shapes: bool,
 
+    /// Dense palette / more characters (only works for luminance and edges modes) 
+    #[arg(short, long)]
+    dense: bool,
+
     /// Sets the aspect ratio of the terminal font
     #[arg(short, long, default_value_t = 2.0)]
     font_aspect_ratio: f32,
@@ -57,6 +62,11 @@ impl Args {
         }
         if modes == 0 {
             self.luminance = true;
+        }
+
+        if self.dense && !(self.luminance || self.edges) {
+            eprintln!("Dense palette only works for luminance and edges modes");
+            std::process::exit(1);
         }
     }
 

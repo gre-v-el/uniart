@@ -48,6 +48,14 @@ struct Args {
     #[arg(short, long)]
     dense: bool,
 
+    /// Use truecolor escape sequences (only works in some terminals)
+    #[arg(short, long)]
+    truecolor: bool,
+
+    /// Use linear filtering instead of nearest neighbor when scaling the image
+    #[arg(short, long)]
+    filter: bool,
+
     /// Sets the aspect ratio of the terminal font
     #[arg(short, long, default_value_t = 2.0)]
     aspect_ratio: f32,

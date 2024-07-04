@@ -1,6 +1,6 @@
 use image::{GenericImageView, ImageError};
 
-use crate::{colored_printer::{color_to_code, reset_color, set_color}, Args};
+use crate::{colored_printer::{reset_color, set_color}, Args};
 
 // https://stackoverflow.com/questions/30097953/ascii-art-sorting-an-array-of-ascii-characters-by-brightness-levels-c-c
 const DENSE_CHARS: &str = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
@@ -31,7 +31,7 @@ pub fn print_luminance(args: &Args) -> Result<(), ImageError> {
     let scaled = args.image_file.as_ref().unwrap().resize_exact(
         args.width,
         args.height, 
-        image::imageops::FilterType::Nearest
+        if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}
     );
 
     for y in 0..scaled.height() {
@@ -44,8 +44,7 @@ pub fn print_luminance(args: &Args) -> Result<(), ImageError> {
 
             let char = char_from_luminance(luminance, args.dense);
             if args.colors {
-                let code = color_to_code(pixel);
-                set_color(code);
+                set_color(pixel, args);
             }
             print!("{char}");
         }

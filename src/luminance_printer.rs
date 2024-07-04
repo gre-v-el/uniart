@@ -1,6 +1,6 @@
-use image::{DynamicImage, ImageError};
+use image::{DynamicImage, GenericImageView, ImageError};
 
-use crate::Args;
+use crate::{colored_printer::{color_to_code, reset_color, set_color}, Args};
 
 // https://stackoverflow.com/questions/30097953/ascii-art-sorting-an-array-of-ascii-characters-by-brightness-levels-c-c
 const CHARS: &str = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
@@ -21,21 +21,23 @@ fn char_from_luminance(luminance: f32) -> char {
     CHARS.chars().nth(low).unwrap()
 }
 
-pub fn convert_luminance(args: &Args, scaled: &DynamicImage) -> Result<Vec<String>, ImageError> {
-    let luminance = scaled.to_luma8();
-
-    // let mut res = String::with_capacity((luminance.width() * luminance.height()) as usize);
-    let mut res = Vec::with_capacity(luminance.height() as usize);
-    for y in 0..luminance.height() {
-        res.push(String::with_capacity(luminance.width() as usize));
-        let cur = res.last_mut().unwrap();
-        for x in 0..luminance.width() {
-            let pixel = luminance.get_pixel(x, y);
-            let mut luminance = pixel[0] as f32 / 255.0;
+pub fn print_luminance(args: &Args, scaled: &DynamicImage) -> Result<(), ImageError> {
+    for y in 0..scaled.height() {
+        for x in 0..scaled.width() {
+            let pixel = scaled.get_pixel(x, y);
+            let [r, g, b, a] = pixel.0;
+            let mut luminance = (0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) / 255.0;
+            luminance *= a as f32 / 255.0;
             if args.invert {luminance = 1.0 - luminance}
-            cur.push(char_from_luminance(luminance));
+
+            let char = char_from_luminance(luminance);
+            let code = color_to_code(pixel);
+            set_color(code);
+            print!("{char}");
         }
+        reset_color();
+        println!()
     }
 
-    return Ok(res);
+    Ok(())
 }

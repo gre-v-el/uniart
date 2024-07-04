@@ -1,8 +1,8 @@
-mod luminance_converter;
+mod luminance_printer;
 mod colored_printer;
 
 use clap::Parser;
-use image::{DynamicImage, ImageError};
+use image::ImageError;
 
 /// CLI app to process images with various modes
 #[derive(Parser, Debug)]
@@ -60,7 +60,7 @@ impl Args {
         }
     }
 
-    fn realize(&self) -> Result<(Vec<String>, DynamicImage), ImageError>{
+    fn realize(&self) -> Result<(), ImageError> {
         let image = image::open(&self.image)?;
 
         let (w, h) = (image.width() as f32, image.height() as f32);
@@ -71,21 +71,17 @@ impl Args {
         );
 
 
-        let result = 
-            if self.luminance {
-                luminance_converter::convert_luminance(&self, &scaled)
-            } else if self.edges {
-                todo!()
-            } else if self.pixels {
-                todo!()
-            }else {
-                todo!()
-            };
-
-        return match result {
-            Ok(v) => Ok((v, scaled)),
-            Err(e) => Err(e),
+        if self.luminance {
+            luminance_printer::print_luminance(&self, &scaled)?;
+        } else if self.edges {
+            todo!()
+        } else if self.pixels {
+            todo!()
+        }else {
+            todo!()
         }
+
+        Ok(())
     }
 }
 
@@ -93,16 +89,7 @@ fn main() {
     let mut args = Args::parse();
     args.validate();
     match args.realize() {
-        Ok((lines, image)) => {
-            if args.colors {
-                colored_printer::print_with_colors(&lines, &image);
-            }
-            else {
-                for line in lines {
-                    println!("{line}");
-                }
-            }
-        },
-        Err(e) => panic!("{}", e.to_string()),
-    };
+        Ok(_) => {},
+        Err(e) => eprintln!("{}", e)
+    }
 }

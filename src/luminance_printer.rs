@@ -27,7 +27,7 @@ fn char_from_luminance(luminance: f32, dense: bool) -> char {
     chars.chars().nth(low).unwrap()
 }
 
-pub fn print_luminance(args: &Args) -> Result<(), ImageError> {
+pub fn print_luminance(args: &Args) {
     let scaled = args.image_file.as_ref().unwrap().resize_exact(
         args.width,
         args.height, 
@@ -51,6 +51,4 @@ pub fn print_luminance(args: &Args) -> Result<(), ImageError> {
         reset_color();
         println!()
     }
-
-    Ok(())
 }

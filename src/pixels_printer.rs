@@ -23,7 +23,7 @@ pub fn print_pixels(args: &Args) -> Result<(), ImageError> {
     Ok(())
 }
 
-pub fn print_double_pixels(args: &Args) -> Result<(), ImageError> {
+pub fn print_double_pixels(args: &Args) {
     let scaled = args.image_file.as_ref().unwrap().resize_exact(
         args.width,
         args.height * 2, // each character is two pixels - top and bottom
@@ -41,6 +41,4 @@ pub fn print_double_pixels(args: &Args) -> Result<(), ImageError> {
         reset_color();
         println!()
     }
-
-    Ok(())
 }

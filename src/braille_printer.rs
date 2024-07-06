@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView, ImageBuffer, ImageError, Luma};
+use image::{GenericImageView, ImageBuffer, Luma};
 
 use crate::{colored_printer::{reset_color, set_color}, Args};
 
@@ -20,7 +20,7 @@ fn get_median_luminance(data: &ImageBuffer<Luma<u8>, Vec<u8>>) -> u8 {
     luminances[mid]
 }
 
-pub fn print_braille(args: &Args) -> Result<(), ImageError> {
+pub fn print_braille(args: &Args) {
     let image = args.image_file.as_ref().unwrap();
     let colors = image.resize_exact( // one pixel per symbol
         args.width, 
@@ -42,7 +42,8 @@ pub fn print_braille(args: &Args) -> Result<(), ImageError> {
             for dy in 0..4 {
                 for dx in 0..2 {
                     let [luminance] = image.get_pixel(x+dx, y+dy).0;
-                    let bit = (luminance > threshold) as u8;
+                    let mut bit = (luminance > threshold) as u8;
+                    if args.invert { bit = 1 - bit; }
                     braille += bit * SHIFTS[dy as usize][dx as usize];
                 }
             }
@@ -54,8 +55,4 @@ pub fn print_braille(args: &Args) -> Result<(), ImageError> {
         reset_color();
         println!();
     }
-
-
-
-    Ok(())
 }

@@ -3,6 +3,8 @@ mod colored_printer;
 mod pixels_printer;
 mod braille_printer;
 
+use std::env;
+
 use clap::Parser;
 use image::{DynamicImage, ImageError};
 
@@ -80,7 +82,7 @@ impl Args {
         } else if self.mode == "double-pixels"{
             pixels_printer::print_double_pixels(&self)?;
         } else if self.mode == "braille" {
-            
+            braille_printer::print_braille(&self)?;
         } else {
             eprintln!("Invalid mode.")
         }

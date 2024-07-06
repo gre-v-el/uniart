@@ -1,6 +1,7 @@
 mod luminance_printer;
 mod colored_printer;
 mod pixels_printer;
+mod braille_printer;
 
 use clap::Parser;
 use image::{DynamicImage, ImageError};
@@ -24,25 +25,9 @@ struct Args {
     #[arg(short, long)]
     invert: bool,
 
-    /// Luminance mode [default]
-    #[arg(short, long)]
-    luminance: bool,
-
-    /// Pixels mode
-    #[arg(short, long)]
-    pixels: bool,
-
-    /// Double pixels mode
-    #[arg(short = 'q', long)]
-    double_pixels: bool,
-
-    /// Edge detection mode
-    #[arg(short, long)]
-    edges: bool,
-
-    /// Shapes detection mode
-    #[arg(short, long)]
-    shapes: bool,
+    /// Mode (luminance, edges, pixels, double-pixels, shapes, braille)
+    #[arg(short, long, default_value_t = String::from("luminance"))]
+    mode: String,
 
     /// Dense palette / more characters (only works for luminance and edges modes) 
     #[arg(short, long)]
@@ -69,25 +54,6 @@ struct Args {
 
 impl Args {
     fn validate(&mut self) -> Result<(), ImageError> {
-        let modes = 
-            if self.luminance {1} else {0} + 
-            if self.edges {1} else {0} + 
-            if self.pixels {1} else {0} + 
-            if self.double_pixels {1} else {0} + 
-            if self.shapes {1} else {0};
-        if modes > 1 {
-            eprintln!("Only one mode can be selected at a time");
-            std::process::exit(1);
-        }
-        if modes == 0 {
-            self.luminance = true;
-        }
-
-        if self.dense && !(self.luminance || self.edges) {
-            eprintln!("Dense palette only works for luminance and edges modes");
-            std::process::exit(1);
-        }
-
         if self.width == 0 {
             self.width = match term_size::dimensions() {
                 Some((w, _)) => w as u32,
@@ -107,16 +73,16 @@ impl Args {
 
     fn realize(&self) -> Result<(), ImageError> {
 
-        if self.luminance {
+        if self.mode == "luminance"{
             luminance_printer::print_luminance(&self)?;
-        } else if self.edges {
-            todo!()
-        } else if self.pixels {
+        } else if self.mode == "pixels" {
             pixels_printer::print_pixels(&self)?;
-        } else if self.double_pixels {
+        } else if self.mode == "double-pixels"{
             pixels_printer::print_double_pixels(&self)?;
-        } else if self.shapes {
-            todo!()
+        } else if self.mode == "braille" {
+            
+        } else {
+            eprintln!("Invalid mode.")
         }
 
         Ok(())

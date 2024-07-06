@@ -18,7 +18,7 @@ pub fn reset_color() {
 
 pub fn set_color(col: Rgba<u8>, args: &Args) {
     if args.truecolor {
-        let [r, g, b, a] = col.0;
+        let [r, g, b, _] = col.0;
         print!("\x1b[38;2;{r};{g};{b}m")
     } else {
         let code = color_to_code(col);

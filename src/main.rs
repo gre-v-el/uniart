@@ -10,6 +10,10 @@ use image::{DynamicImage, ImageError};
 #[derive(Parser, Debug)]
 #[command(version = "1.0", author = "Gabriel Myszkier <myszkier.gabriel@gmail.com>", about = "Converts images to ascii art")]
 struct Args {
+    /// Mode (luminance, pixels, double-pixels, braille)
+    #[arg(short, long, default_value_t = String::from("luminance"))]
+    mode: String,
+
     /// Path to the image file
     image: String,
 
@@ -17,25 +21,21 @@ struct Args {
     #[arg(short, long, default_value_t = 100)]
     width: u32,
 
-    /// Outputs the image in color (ansi color escape sequences)
+    /// Outputs the image in color (ansi escape sequences)
     #[arg(short, long)]
     colors: bool,
+
+    /// Use truecolor escape sequences (only works in some terminals)
+    #[arg(short, long)]
+    truecolor: bool,
 
     /// Inverts the image brightness (useful in white-background terminals)
     #[arg(short, long)]
     invert: bool,
 
-    /// Mode (luminance, edges, pixels, double-pixels, shapes, braille)
-    #[arg(short, long, default_value_t = String::from("luminance"))]
-    mode: String,
-
-    /// Dense palette / more characters (only works for luminance and edges modes) 
+    /// Dense palette / more characters (only works for luminance mode) 
     #[arg(short, long)]
     dense: bool,
-
-    /// Use truecolor escape sequences (only works in some terminals)
-    #[arg(short, long)]
-    truecolor: bool,
 
     /// Use linear filtering instead of nearest neighbor when scaling the image
     #[arg(short, long)]
@@ -68,6 +68,10 @@ impl Args {
         let (w, h) = (self.image_file.as_ref().unwrap().width() as f32, self.image_file.as_ref().unwrap().height() as f32);
         self.height = (h/w*self.width as f32 / self.aspect_ratio) as u32;
 
+        if self.truecolor {
+            self.colors = true;
+        }
+
         Ok(())
     }
 
@@ -96,7 +100,5 @@ fn main() {
     if let Err(e) = args.validate() {
         eprintln!("{}", e);
     }
-    if let Err(e) = args.realize() {
-        eprintln!("{}", e);
-    }
+    args.realize();
 }

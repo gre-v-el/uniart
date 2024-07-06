@@ -1,4 +1,4 @@
-use image::{GenericImageView, ImageError};
+use image::GenericImageView;
 
 use crate::{colored_printer::{reset_color, set_color}, Args};
 

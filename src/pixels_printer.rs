@@ -1,8 +1,8 @@
-use image::{GenericImageView, ImageError};
+use image::GenericImageView;
 
 use crate::{colored_printer::{reset_color, set_color, set_color_bg}, Args};
 
-pub fn print_pixels(args: &Args) -> Result<(), ImageError> {
+pub fn print_pixels(args: &Args) {
     let scaled = args.image_file.as_ref().unwrap().resize_exact(
         args.width,
         args.height,
@@ -19,8 +19,6 @@ pub fn print_pixels(args: &Args) -> Result<(), ImageError> {
         reset_color();
         println!()
     }
-
-    Ok(())
 }
 
 pub fn print_double_pixels(args: &Args) {

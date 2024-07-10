@@ -26,6 +26,17 @@ pub fn set_color(col: Rgba<u8>, args: &Args) {
     }
 }
 
+pub fn set_color_full_brightness(col: Rgba<u8>, args: &Args) {
+    let (mut r, mut g, mut b) = (col[0] as f32/255.0, col[1] as f32/255.0, col[2] as f32/255.0);
+    let max = r.max(g).max(b);
+    r /= max;
+    g /= max;
+    b /= max;
+    let (r, g, b) = ((r*255.0) as u8, (g*255.0) as u8, (b*255.0) as u8);
+    let col = Rgba::from([r, g, b, col.0[3]]);
+    set_color(col, args)
+}
+
 pub fn set_color_bg(fg: Rgba<u8>, bg: Rgba<u8>, args: &Args) {
     if args.truecolor {
         let [rf, gf, bf, _] = fg.0;

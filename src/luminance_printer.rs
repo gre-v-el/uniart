@@ -1,6 +1,6 @@
 use image::GenericImageView;
 
-use crate::{colored_printer::{reset_color, set_color}, Args};
+use crate::{colored_printer::{reset_color, set_color_full_brightness}, Args};
 
 // https://stackoverflow.com/questions/30097953/ascii-art-sorting-an-array-of-ascii-characters-by-brightness-levels-c-c
 const DENSE_CHARS: &str = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
@@ -44,7 +44,7 @@ pub fn print_luminance(args: &Args) {
 
             let char = char_from_luminance(luminance, args.dense);
             if args.colors {
-                set_color(pixel, args);
+                set_color_full_brightness(pixel, args);
             }
             print!("{char}");
         }

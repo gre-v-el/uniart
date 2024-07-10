@@ -1,6 +1,6 @@
-use image::{imageops::{dither, BiLevel}, GenericImageView, Rgba};
+use image::{imageops::{dither, BiLevel}, GenericImageView};
 
-use crate::{colored_printer::{reset_color, set_color}, Args};
+use crate::{colored_printer::{reset_color, set_color, set_color_full_brightness}, Args};
 
 const WEIGHTS: [[u8; 2]; 4] = [
     [0x1,  0x8], 
@@ -36,18 +36,14 @@ pub fn print_braille(args: &Args) {
                 }
             }
             if args.colors {
-                let mut col = colors.get_pixel(x/2, y/4);
+                let col = colors.get_pixel(x/2, y/4);
                 if !args.invert {
                     // make the color's brightness maximum, because dithering takes care of brightness
-                    let (mut r, mut g, mut b) = (col[0] as f32/255.0, col[1] as f32/255.0, col[2] as f32/255.0);
-                    let max = r.max(g).max(b);
-                    r /= max;
-                    g /= max;
-                    b /= max;
-                    let (r, g, b) = ((r*255.0) as u8, (g*255.0) as u8, (b*255.0) as u8);
-                    col = Rgba::from([r, g, b, col.0[3]]);
+                    set_color_full_brightness(col, args);
                 }
-                set_color(col, args);
+                else {
+                    set_color(col, args);
+                }
             }
             print!("{}", std::char::from_u32(0x2800 + braille as u32).unwrap());
         }

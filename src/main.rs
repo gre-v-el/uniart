@@ -93,6 +93,9 @@ impl Args {
         else if self.mode == "edges" {
             edges_printer::print_edges(&self);
         }
+        else if self.mode == "shapes" {
+            shape_printer::print_shapes(&self);
+        }
         else {
             eprintln!("Invalid mode.")
         }
@@ -104,6 +107,7 @@ fn main() {
 
     if let Err(e) = args.validate() {
         eprintln!("{}", e);
+        return;
     }
     args.realize();
 }

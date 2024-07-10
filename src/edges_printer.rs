@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use image::{DynamicImage, GenericImageView, ImageBuffer};
 
-use crate::{colors::{reset_color, set_color, set_color_full_brightness}, luminance_printer::char_from_color, Args};
+use crate::{colors::{reset_color, set_color_full_brightness}, luminance_printer::char_from_color, Args};
 
 const SOBEL_X: [i16; 9] = [
     -2, 0, 2,

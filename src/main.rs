@@ -8,6 +8,8 @@ mod shape_printer;
 use clap::Parser;
 use image::{DynamicImage, ImageError};
 
+const MODES: [&str; 6] = ["luminance", "pixels", "double-pixels", "braille", "edges", "shapes"];
+
 /// CLI app to display images in the terminal in different ways
 #[derive(Parser, Debug)]
 #[command(version = "1.0", author = "Gabriel Myszkier <myszkier.gabriel@gmail.com>", about = "Converts images to ascii art")]
@@ -50,9 +52,13 @@ struct Args {
     #[arg(short, long, help_heading = "Image manipulation")]
     invert: bool,
 
-    /// Uses a dense character palette. (only works for luminance and edges modes) 
+    /// Switch the quality of output. (only works for luminance, edges and shapes modes)
+    /// 
+    /// For luminance and edges modes it will use a larger palette of characters,
+    /// which will potentially result in a better looking output.
+    /// For shapes mode it will reduce the quality of character choice and improve performance.
     #[arg(short, long, help_heading = "Image manipulation")]
-    dense: bool,
+    quality: bool,
 
     /// Uses linear filter instead of nearest neighbor when scaling the image. 
     /// 
@@ -69,6 +75,7 @@ struct Args {
 
 impl Args {
     fn validate(&mut self) -> Result<(), ImageError> {
+        // If the width is set to 0, fill the terminal width.
         if self.width == 0 {
             self.width = match term_size::dimensions() {
                 Some((w, _)) => w as u32,
@@ -76,38 +83,38 @@ impl Args {
             }
         }
 
+        // Open image file and calculate height in characters.
         self.image_file = Some(image::open(&self.image)?);
-        let (w, h) = (self.image_file.as_ref().unwrap().width() as f32, self.image_file.as_ref().unwrap().height() as f32);
+        let img_ref = self.image_file.as_ref().unwrap();
+        let (w, h) = (img_ref.width() as f32, img_ref.height() as f32);
         self.height = (h/w*self.width as f32 / self.aspect) as u32;
 
         if self.truecolor {
             self.colors = true;
         }
 
+        // If the mode is not valid, try to find a mode that starts with the given string.
+        if !MODES.contains(&self.mode.as_str()) {
+            let mode = MODES.iter().find(|&m| m.starts_with(&self.mode));
+            match mode {
+                Some(m) => self.mode = m.to_string(),
+                None => {},
+            }
+        }
+
         Ok(())
     }
 
     fn realize(&self) {
-        if self.mode == "luminance"{
-            luminance_printer::print_luminance(&self);
-        } 
-        else if self.mode == "pixels" {
-            pixels_printer::print_pixels(&self);
-        } 
-        else if self.mode == "double-pixels"{
-            pixels_printer::print_double_pixels(&self);
-        } 
-        else if self.mode == "braille" {
-            braille_printer::print_braille(&self);
-        }
-        else if self.mode == "edges" {
-            edges_printer::print_edges(&self);
-        }
-        else if self.mode == "shapes" {
-            shape_printer::print_shapes(&self);
-        }
-        else {
-            eprintln!("Invalid mode.")
+        // Choose the correct printer based on the mode.
+        match self.mode.as_str() {
+            "luminance" =>     luminance_printer::print_luminance(&self),
+            "pixels" =>        pixels_printer::print_pixels(&self),
+            "double-pixels" => pixels_printer::print_double_pixels(&self),
+            "braille" =>       braille_printer::print_braille(&self),
+            "edges" =>         edges_printer::print_edges(&self),
+            "shapes" =>        shape_printer::print_shapes(&self),
+            _ => eprintln!("Invalid mode.")
         }
     }
 }

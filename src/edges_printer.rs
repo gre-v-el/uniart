@@ -25,6 +25,7 @@ pub fn convolve(image: &DynamicImage, kernel: &[i16; 9]) -> ImageBuffer<image::L
             for j in 0..3usize {
                 let mut x0 = x as i32 + i as i32;
                 let mut y0 = y as i32 + j as i32;
+                // If the pixel is out of bounds, snap it to the nearest edge.
                 if x0 < 0 || x0 >= image.width() as i32 {
                     x0 = x as i32;
                 }
@@ -32,8 +33,8 @@ pub fn convolve(image: &DynamicImage, kernel: &[i16; 9]) -> ImageBuffer<image::L
                     y0 = y as i32;
                 }
                 
+                // Sum the changes in all channels.
                 let p = image.get_pixel(x0 as u32, y0 as u32).0;
-                
                 for c in p {
                     sum += c as i16 * kernel[i*3 + j];
                 }
@@ -61,13 +62,15 @@ pub fn print_edges(args: &Args) {
             let p_y = edges_x.get_pixel(x, y).0[0] as f32;
             let p = (p_x*p_x + p_y*p_y).sqrt();
 
-            set_color_full_brightness(image.get_pixel(x, y), args);
+            let pixel  = image.get_pixel(x, y);
+            set_color_full_brightness(pixel, args);
             
             if p < 1000.0 { 
-                let pixel = image.get_pixel(x, y);
+                // print luma
                 print!("{}", char_from_color(pixel, args));
             }
-            else {
+            else { 
+                // print appropriate edge character
                 let mut angle = f32::atan2(p_y, p_x);
                 if angle < 0.0 { angle += PI; }
                 let i = ((angle + PI/8.0) / (PI/4.0)) as usize % 4;

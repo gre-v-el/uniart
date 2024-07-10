@@ -32,7 +32,7 @@ pub fn print_double_pixels(args: &Args) {
         for x in 0..args.width {
             let upper_px = scaled.get_pixel(x, 2*y);
             let lower_px = scaled.get_pixel(x, 2*y+1);
-
+            
             set_color_bg(lower_px, upper_px, args);
             print!("▄");
         }

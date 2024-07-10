@@ -16,7 +16,7 @@ pub fn print_braille(args: &Args) {
         args.height, 
         if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}
     );
-    let image = image.resize_exact( // 2x4 pixels per symbol (braille)
+    let image = image.resize_exact( // 2x4 pixels per symbol (braille grid)
         args.width*2, 
         args.height*4, 
         if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}

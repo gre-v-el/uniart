@@ -2,6 +2,7 @@ mod luminance_printer;
 mod colored_printer;
 mod pixels_printer;
 mod braille_printer;
+mod edges_printer;
 
 use clap::Parser;
 use image::{DynamicImage, ImageError};
@@ -87,7 +88,10 @@ impl Args {
         } 
         else if self.mode == "braille" {
             braille_printer::print_braille(&self);
-        } 
+        }
+        else if self.mode == "edges" {
+            edges_printer::print_edges(&self);
+        }
         else {
             eprintln!("Invalid mode.")
         }

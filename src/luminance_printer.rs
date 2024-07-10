@@ -9,7 +9,7 @@ const DENSE_BRIGHTNESS: [f32; 92] = [0.0, 0.0751, 0.0829, 0.0848, 0.1227, 0.1403
 const SPARSE_CHARS: &str = " .-':,^=+T|IoxOXH80";
 const SPARSE_BRIGHTNESS: [f32; 19] = [0.0, 0.117, 0.1197, 0.1731, 0.198, 0.2611, 0.308, 0.3411, 0.4119, 0.5287, 0.575, 0.6058, 0.6463, 0.6612, 0.8427, 0.9123, 0.9258, 0.9357, 0.9999];
 
-fn char_from_luminance(luminance: f32, dense: bool) -> char {
+pub fn char_from_luminance(luminance: f32, dense: bool) -> char {
     let chars = if dense {DENSE_CHARS} else {SPARSE_CHARS};
     let brightness: &[f32] = if dense {&DENSE_BRIGHTNESS} else {&SPARSE_BRIGHTNESS};
 

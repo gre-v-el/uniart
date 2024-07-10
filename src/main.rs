@@ -11,43 +11,56 @@ use image::{DynamicImage, ImageError};
 /// CLI app to display images in the terminal in different ways
 #[derive(Parser, Debug)]
 #[command(version = "1.0", author = "Gabriel Myszkier <myszkier.gabriel@gmail.com>", about = "Converts images to ascii art")]
+#[group()]
 struct Args {
-    /// Mode (luminance, pixels, double-pixels, braille)
-    #[arg(short, long, default_value_t = String::from("luminance"))]
-    mode: String,
-
     /// Path to the image file
     image: String,
 
+    /// Mode. (one of: luminance, pixels, double-pixels, braille, edges, shapes)
+    ///
+    /// Can use only the first letter of the mode as a shortcut.
+    #[arg(short, long, default_value_t = String::from("shapes"), help_heading = "Output customization")]
+    mode: String,
+    
     /// Sets the width of the output. If set to 0 it will fill the terminal width.
-    #[arg(short, long, default_value_t = 100)]
+    /// 
+    /// If the terminal width cannot be determined, the default value will be used.
+    #[arg(short, long, default_value_t = 100, help_heading = "Output customization")]
     width: u32,
 
-    /// Outputs the image in color (ansi escape sequences)
-    #[arg(short, long)]
+    /// Sets the aspect ratio of the terminal font.
+    #[arg(short, long, default_value_t = 2.0, help_heading = "Output customization")]
+    aspect: f32,
+
+    /// Outputs the image in color.
+    /// 
+    /// Ansi escape sequences are not supported by all terminals, especially on older Windows versions.
+    #[arg(short, long, help_heading = "Color options")]
     colors: bool,
 
-    /// Use truecolor escape sequences (only works in some terminals)
-    #[arg(short, long)]
+    /// Uses truecolor escape sequences. (only works in some terminals)
+    #[arg(short, long, help_heading = "Color options")]
     truecolor: bool,
 
-    /// Inverts the image brightness (useful in white-background terminals)
-    #[arg(short, long)]
+    /// Sets the background color to black.
+    #[arg(short, long, help_heading = "Color options")]
+    background: bool,
+
+    /// Inverts the image brightness. (useful in white-background terminals)
+    #[arg(short, long, help_heading = "Image manipulation")]
     invert: bool,
 
-    /// Dense palette / more characters (only works for luminance mode) 
-    #[arg(short, long)]
+    /// Uses a dense character palette. (only works for luminance and edges modes) 
+    #[arg(short, long, help_heading = "Image manipulation")]
     dense: bool,
 
-    /// Use linear filtering instead of nearest neighbor when scaling the image
-    #[arg(short, long)]
+    /// Uses linear filter instead of nearest neighbor when scaling the image. 
+    /// 
+    /// Results in cleaner but less crisp output.
+    #[arg(short, long, help_heading = "Image manipulation")]
     filter: bool,
 
-    /// Sets the aspect ratio of the terminal font
-    #[arg(short, long, default_value_t = 2.0)]
-    aspect_ratio: f32,
-
-
+    // Not initialized by clap, filled later.
     #[clap(skip)]
     height: u32,
     #[clap(skip)]
@@ -59,16 +72,13 @@ impl Args {
         if self.width == 0 {
             self.width = match term_size::dimensions() {
                 Some((w, _)) => w as u32,
-                None => {
-                    eprintln!("Could not determine terminal width. Setting width to 100");
-                    100
-                },
+                None => {100},
             }
         }
 
         self.image_file = Some(image::open(&self.image)?);
         let (w, h) = (self.image_file.as_ref().unwrap().width() as f32, self.image_file.as_ref().unwrap().height() as f32);
-        self.height = (h/w*self.width as f32 / self.aspect_ratio) as u32;
+        self.height = (h/w*self.width as f32 / self.aspect) as u32;
 
         if self.truecolor {
             self.colors = true;

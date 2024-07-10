@@ -1,6 +1,6 @@
 use image::{imageops::{dither, BiLevel}, GenericImageView};
 
-use crate::{colors::{reset_color, set_color, set_color_full_brightness}, Args};
+use crate::{colors::{reset_color, set_black_background, set_color, set_color_full_brightness}, Args};
 
 const WEIGHTS: [[u8; 2]; 4] = [
     [0x1,  0x8], 
@@ -25,6 +25,7 @@ pub fn print_braille(args: &Args) {
     dither(&mut image, &BiLevel);
 
     for y in (0..image.height()).step_by(4) {
+        set_black_background(args);
         for x in (0..image.width()).step_by(2) {
             let mut braille = 0;
             for dy in 0..4 {

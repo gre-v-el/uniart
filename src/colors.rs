@@ -55,3 +55,9 @@ pub fn set_color_bg(fg: Rgba<u8>, bg: Rgba<u8>, args: &Args) {
         print!("\x1b[38;5;{fg_code}m\x1b[48;5;{bg_code}m")
     }
 }
+
+pub fn set_black_background(args: &Args) {
+    if args.background {
+        print!("\x1b[48;5;0m");
+    }
+}

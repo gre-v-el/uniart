@@ -1,6 +1,6 @@
 use image::GenericImageView;
 
-use crate::{colors::set_color, Args};
+use crate::{colors::{reset_color, set_black_background, set_color}, Args};
 
 // const SYMBOLS_FILE: &[u8] = include_bytes!("../assets/symbols_small.png");
 // const SYMBOLS_WIDTH: u32 = 4;
@@ -30,6 +30,7 @@ pub fn print_shapes(args: &Args) {
     let image = image.to_luma8();
 
     for y in 0..args.height {
+        set_black_background(args);
         for x in 0..args.width {
             let x0 = x * SYMBOLS_WIDTH;
             let y0 = y * SYMBOLS_HEIGHT;
@@ -59,6 +60,7 @@ pub fn print_shapes(args: &Args) {
             set_color(colors.get_pixel(x, y), args);
             print!("{}", symbol);
         }
+        reset_color();
         println!();
     }
 }

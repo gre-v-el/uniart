@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use image::{DynamicImage, GenericImageView, ImageBuffer};
 
-use crate::{colors::{reset_color, set_color_full_brightness}, luminance_printer::char_from_color, Args};
+use crate::{colors::{reset_color, set_black_background, set_color_full_brightness}, luminance_printer::char_from_color, Args};
 
 const SOBEL_X: [i16; 9] = [
     -2, 0, 2,
@@ -12,8 +12,8 @@ const SOBEL_X: [i16; 9] = [
 
 const SOBEL_Y: [i16; 9] = [
     -2, -3, -2,
-    0,  0,  0,
-    2,  3,  2
+     0,  0,  0,
+     2,  3,  2
 ];
 
 const EDGES: [char; 4] = ['|', '/', '-', '\\'];
@@ -23,10 +23,13 @@ pub fn convolve(image: &DynamicImage, kernel: &[i16; 9]) -> ImageBuffer<image::L
         let mut sum = 0;
         for i in 0..3usize {
             for j in 0..3usize {
-                let x0 = x as i32 + i as i32;
-                let y0 = y as i32 + j as i32;
-                if x0 < 0 || y0 < 0 || x0 >= image.width() as i32 || y0 >= image.height() as i32 {
-                    continue;
+                let mut x0 = x as i32 + i as i32;
+                let mut y0 = y as i32 + j as i32;
+                if x0 < 0 || x0 >= image.width() as i32 {
+                    x0 = x as i32;
+                }
+                if y0 < 0 || y0 >= image.height() as i32 {
+                    y0 = y as i32;
                 }
                 
                 let p = image.get_pixel(x0 as u32, y0 as u32).0;
@@ -52,6 +55,7 @@ pub fn print_edges(args: &Args) {
     let edges_y =  convolve(&image, &SOBEL_Y);
 
     for y in 0..image.height() {
+        set_black_background(args);
         for x in 0..image.width() {
             let p_x = edges_y.get_pixel(x, y).0[0] as f32;
             let p_y = edges_x.get_pixel(x, y).0[0] as f32;
@@ -70,7 +74,7 @@ pub fn print_edges(args: &Args) {
                 print!("{}", EDGES[i]);
             }
         }
-        println!();
         reset_color();
+        println!();
     }
 }

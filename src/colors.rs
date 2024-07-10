@@ -20,13 +20,16 @@ pub fn set_color(col: Rgba<u8>, args: &Args) {
     if args.truecolor {
         let [r, g, b, _] = col.0;
         print!("\x1b[38;2;{r};{g};{b}m")
-    } else {
+    } 
+    else if args.colors {
         let code = color_to_code(col);
         print!("\x1b[38;5;{code}m")
     }
 }
 
 pub fn set_color_full_brightness(col: Rgba<u8>, args: &Args) {
+    if !args.colors && !args.truecolor { return; }
+    
     let (mut r, mut g, mut b) = (col[0] as f32/255.0, col[1] as f32/255.0, col[2] as f32/255.0);
     let max = r.max(g).max(b);
     r /= max;
@@ -38,6 +41,8 @@ pub fn set_color_full_brightness(col: Rgba<u8>, args: &Args) {
 }
 
 pub fn set_color_bg(fg: Rgba<u8>, bg: Rgba<u8>, args: &Args) {
+    if !args.colors && !args.truecolor { return; }
+    
     if args.truecolor {
         let [rf, gf, bf, _] = fg.0;
         let [rb, gb, bb, _] = bg.0;

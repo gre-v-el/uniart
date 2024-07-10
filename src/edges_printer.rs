@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use image::{DynamicImage, GenericImageView, ImageBuffer};
 
-use crate::{colored_printer::{reset_color, set_color}, luminance_printer::char_from_luminance, Args};
+use crate::{colors::{reset_color, set_color, set_color_full_brightness}, luminance_printer::char_from_color, Args};
 
 const SOBEL_X: [i16; 9] = [
     -2, 0, 2,
@@ -57,17 +57,11 @@ pub fn print_edges(args: &Args) {
             let p_y = edges_x.get_pixel(x, y).0[0] as f32;
             let p = (p_x*p_x + p_y*p_y).sqrt();
 
-            if args.colors {
-                set_color(image.get_pixel(x, y), args);
-            }
-
+            set_color_full_brightness(image.get_pixel(x, y), args);
+            
             if p < 1000.0 { 
-                let p = image.get_pixel(x, y);
-                let [r, g, b, a] = p.0;
-                let mut luminance = (0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) / 255.0;
-                luminance *= a as f32 / 255.0;
-                if args.invert {luminance = 1.0 - luminance}
-                print!("{}", char_from_luminance(luminance, args.dense));
+                let pixel = image.get_pixel(x, y);
+                print!("{}", char_from_color(pixel, args));
             }
             else {
                 let mut angle = f32::atan2(p_y, p_x);

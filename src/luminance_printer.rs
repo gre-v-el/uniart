@@ -1,6 +1,6 @@
-use image::GenericImageView;
+use image::{GenericImageView, Rgba};
 
-use crate::{colored_printer::{reset_color, set_color_full_brightness}, Args};
+use crate::{colors::{reset_color, set_color_full_brightness}, Args};
 
 // https://stackoverflow.com/questions/30097953/ascii-art-sorting-an-array-of-ascii-characters-by-brightness-levels-c-c
 const DENSE_CHARS: &str = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
@@ -27,6 +27,18 @@ pub fn char_from_luminance(luminance: f32, dense: bool) -> char {
     chars.chars().nth(low).unwrap()
 }
 
+pub fn luminance(col: Rgba<u8>) -> f32 {
+    let [r, g, b, a] = col.0;
+    (0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) / 255.0 * a as f32 / 255.0
+}
+
+pub fn char_from_color(col: Rgba<u8>, args: &Args) -> char {
+    let mut luminance = luminance(col);
+    if args.invert {luminance = 1.0 - luminance}
+    let char = char_from_luminance(luminance, args.dense);
+    char
+}
+
 pub fn print_luminance(args: &Args) {
     let scaled = args.image_file.as_ref().unwrap().resize_exact(
         args.width,
@@ -37,15 +49,9 @@ pub fn print_luminance(args: &Args) {
     for y in 0..scaled.height() {
         for x in 0..scaled.width() {
             let pixel = scaled.get_pixel(x, y);
-            let [r, g, b, a] = pixel.0;
-            let mut luminance = (0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) / 255.0;
-            luminance *= a as f32 / 255.0;
-            if args.invert {luminance = 1.0 - luminance}
+            let char = char_from_color(pixel, args);
 
-            let char = char_from_luminance(luminance, args.dense);
-            if args.colors {
-                set_color_full_brightness(pixel, args);
-            }
+            set_color_full_brightness(pixel, args);
             print!("{char}");
         }
         reset_color();

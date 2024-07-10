@@ -1,10 +1,10 @@
 use image::{imageops::{dither, BiLevel}, GenericImageView};
 
-use crate::{colored_printer::{reset_color, set_color, set_color_full_brightness}, Args};
+use crate::{colors::{reset_color, set_color, set_color_full_brightness}, Args};
 
 const WEIGHTS: [[u8; 2]; 4] = [
     [0x1,  0x8], 
-    [0x2,  0x10], 
+    [0x2,  0x10],
     [0x4,  0x20], 
     [0x40, 0x80]
 ];
@@ -38,7 +38,6 @@ pub fn print_braille(args: &Args) {
             if args.colors {
                 let col = colors.get_pixel(x/2, y/4);
                 if !args.invert {
-                    // make the color's brightness maximum, because dithering takes care of brightness
                     set_color_full_brightness(col, args);
                 }
                 else {

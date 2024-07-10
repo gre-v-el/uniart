@@ -1,8 +1,9 @@
 mod luminance_printer;
-mod colored_printer;
+mod colors;
 mod pixels_printer;
 mod braille_printer;
 mod edges_printer;
+mod shape_printer;
 
 use clap::Parser;
 use image::{DynamicImage, ImageError};

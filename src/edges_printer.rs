@@ -67,7 +67,7 @@ pub fn print_edges(args: &Args) {
                 let mut luminance = (0.299 * r as f32 + 0.587 * g as f32 + 0.114 * b as f32) / 255.0;
                 luminance *= a as f32 / 255.0;
                 if args.invert {luminance = 1.0 - luminance}
-                print!("{}", char_from_luminance(luminance, false));
+                print!("{}", char_from_luminance(luminance, args.dense));
             }
             else {
                 let mut angle = f32::atan2(p_y, p_x);

@@ -7,7 +7,7 @@ mod edges_printer;
 use clap::Parser;
 use image::{DynamicImage, ImageError};
 
-/// CLI app to process images with various modes
+/// CLI app to display images in the terminal in different ways
 #[derive(Parser, Debug)]
 #[command(version = "1.0", author = "Gabriel Myszkier <myszkier.gabriel@gmail.com>", about = "Converts images to ascii art")]
 struct Args {

@@ -2,24 +2,22 @@ use image::{DynamicImage, GenericImageView};
 
 use crate::{colors::{reset_color, set_black_background, set_color}, Args};
 
-const SMALL_SYMBOLS_FILE: &[u8] = include_bytes!("../assets/symbols_small.png");
+pub const SMALL_SYMBOLS_FILE: &[u8] = include_bytes!("../assets/symbols_small.png");
 const SMALL_SYMBOLS_WIDTH: u32 = 4;
 const SMALL_SYMBOLS_HEIGHT: u32 = 8;
 
-const BIG_SYMBOLS_FILE: &[u8] = include_bytes!("../assets/symbols_big.png");
+pub const BIG_SYMBOLS_FILE: &[u8] = include_bytes!("../assets/symbols_big.png");
 const BIG_SYMBOLS_WIDTH: u32 = 8;
 const BIG_SYMBOLS_HEIGHT: u32 = 16;
 
-const ASCII_START: u32 = 32;
-const ASCII_END: u32 = 126;
+pub const ASCII_START: u32 = 32;
+pub const ASCII_END: u32 = 127;
 
 pub fn print_shapes(args: &Args, image: &DynamicImage) {
-    let symbols_file = if args.quality {SMALL_SYMBOLS_FILE}   else {BIG_SYMBOLS_FILE};
     let symbols_width =  if args.quality {SMALL_SYMBOLS_WIDTH}  else {BIG_SYMBOLS_WIDTH};
     let symbols_height = if args.quality {SMALL_SYMBOLS_HEIGHT} else {BIG_SYMBOLS_HEIGHT};
 
-    let symbols = image::load_from_memory(symbols_file).unwrap();
-    let symbols = symbols.as_luma8().unwrap();
+    let symbols = args.shapes_symbols.as_ref().unwrap();
     
     // One pixel per character.
     let colors = image.resize_exact(
@@ -46,7 +44,8 @@ pub fn print_shapes(args: &Args, image: &DynamicImage) {
             let mut best_symbol = 0;
             let mut best_cost = u32::MAX;
 
-            for symbol in 0..=(ASCII_END - ASCII_START) {
+            for c in args.palette.as_ref().unwrap().chars() {
+                let symbol = c as u32 - ASCII_START;
                 let mut symbol_cost = 0;
                 for v in 0..symbols_height {
                     for u in 0..symbols_width {

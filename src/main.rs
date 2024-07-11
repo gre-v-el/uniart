@@ -11,9 +11,10 @@ use std::process::exit;
 
 use clap::Parser;
 use gif_animator::animate_gif;
-use image::{DynamicImage, ImageError};
+use image::{DynamicImage, ImageBuffer, ImageError};
 
 use image_file::ImageFile;
+use shape_printer::{BIG_SYMBOLS_FILE, SMALL_SYMBOLS_FILE};
 
 const MODES: [&str; 6] = ["luminance", "pixels", "double-pixels", "braille", "edges", "shapes"];
 
@@ -40,6 +41,12 @@ struct Args {
     /// Sets the aspect ratio of the terminal font.
     #[arg(short, long, default_value_t = 2.0, help_heading = "Output customization")]
     aspect: f32,
+
+    /// Sets the character palette to use. Works in shapes mode.
+    /// 
+    /// Must be subset of "[SPACE],A-Z,a-z,0-9,!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~" (ASCII 32-127)
+    #[arg(short, long, help_heading = "Output customization")]
+    palette: Option<String>,
 
     /// Outputs the image in color.
     /// 
@@ -82,7 +89,10 @@ struct Args {
     image_file: Option<ImageFile>,
 
     #[clap(skip)]
-    printer: Option<fn(&Args, &DynamicImage) -> ()>
+    printer: Option<fn(&Args, &DynamicImage) -> ()>,
+
+    #[clap(skip)]
+    shapes_symbols: Option<ImageBuffer<image::Luma<u8>, Vec<u8>>>,
 }
 
 impl Args {
@@ -119,6 +129,24 @@ impl Args {
             });
         if self.mode == "pixels" || self.mode == "double-pixels" {
             self.colors = true;
+        }
+        if self.mode == "shapes" {
+            // Load the symbols image.
+            let symbols_file = if self.quality {SMALL_SYMBOLS_FILE}   else {BIG_SYMBOLS_FILE};
+
+            let symbols = image::load_from_memory(symbols_file).unwrap();
+            self.shapes_symbols = Some(symbols.into_luma8());
+
+            // Prepare the palette.
+            if let None = self.palette {
+                self.palette = Some(String::from(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"));
+            }
+            for c in self.palette.as_ref().unwrap().chars() {
+                if (c as u32) < shape_printer::ASCII_START || (c as u32) > shape_printer::ASCII_END {
+                    eprintln!("Invalid character in the palette: {}", c);
+                    exit(1);
+                }
+            }
         }
 
         // Open image file.

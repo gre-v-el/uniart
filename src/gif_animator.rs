@@ -34,24 +34,21 @@ pub fn animate_gif(args: &Args, frames: &Vec<GifFrame>, dims: (u32, u32)) {
         .cursor_pos().expect("Failed to get cursor position.");
     
     // Animate.
-    let mut canvas = DynamicImage::new_rgba8(dims.0, dims.1);
     let mut last_frame = Instant::now();
 
     let mut i = 0;
     while r.load(Ordering::SeqCst) {
         let frame = &frames[i];
 
-        if last_frame.elapsed() >= frame.dalay_as_duration() {
-            last_frame = Instant::now();
-        }
-        else {
+        if last_frame.elapsed() < frame.dalay_as_duration() {
             thread::sleep(frame.dalay_as_duration() - last_frame.elapsed());
         }
+        last_frame = Instant::now();
         
-        image::imageops::overlay(&mut canvas, &frame.image, frame.left as i64, frame.top as i64);
         print!("{}", termion::cursor::Goto(origin.0, origin.1));
-        (args.printer.unwrap())(args, &canvas);
+        (args.printer.unwrap())(args, &frame.image);
         i = (i + 1) % frames.len();
+
     }
 
     print!("{}", termion::cursor::Show);

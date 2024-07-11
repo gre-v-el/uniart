@@ -35,7 +35,7 @@ struct Args {
     /// Sets the width of the output. If set to 0 it will fill the terminal.
     /// 
     /// If the terminal width cannot be determined, the default value will be used.
-    #[arg(short, long, default_value_t = 100, help_heading = "Output customization")]
+    #[arg(short, long, default_value_t = 0, help_heading = "Output customization")]
     width: u32,
 
     /// Sets the aspect ratio of the terminal font.

@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["/home/grev/Downloads/1350069.jpeg", "-w", "0", "-m", "shapes"],
+            "args": [],
             "cwd": "${workspaceFolder}"
         },
         {

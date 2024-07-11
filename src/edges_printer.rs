@@ -44,8 +44,7 @@ pub fn convolve(image: &DynamicImage, kernel: &[i16; 9]) -> ImageBuffer<image::L
     })
 }
 
-pub fn print_edges(args: &Args) {
-    let image = args.image_file.as_ref().unwrap();
+pub fn print_edges(args: &Args, image: &DynamicImage) {
     let image = image.resize_exact(
         args.width, 
         args.height, 

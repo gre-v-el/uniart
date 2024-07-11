@@ -1,9 +1,9 @@
-use image::GenericImageView;
+use image::{DynamicImage, GenericImageView};
 
 use crate::{colors::{reset_color, set_color, set_color_bg}, Args};
 
-pub fn print_pixels(args: &Args) {
-    let scaled = args.image_file.as_ref().unwrap().resize_exact(
+pub fn print_pixels(args: &Args, image: &DynamicImage) {
+    let scaled = image.resize_exact(
         args.width,
         args.height,
         if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}
@@ -21,8 +21,8 @@ pub fn print_pixels(args: &Args) {
     }
 }
 
-pub fn print_double_pixels(args: &Args) {
-    let scaled = args.image_file.as_ref().unwrap().resize_exact(
+pub fn print_double_pixels(args: &Args, image: &DynamicImage) {
+    let scaled = image.resize_exact(
         args.width,
         args.height * 2, // each character is two pixels - top and bottom
         if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}

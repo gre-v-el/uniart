@@ -1,4 +1,4 @@
-use image::GenericImageView;
+use image::{DynamicImage, GenericImageView};
 
 use crate::{colors::{reset_color, set_black_background, set_color}, Args};
 
@@ -13,7 +13,7 @@ const BIG_SYMBOLS_HEIGHT: u32 = 16;
 const ASCII_START: u32 = 32;
 const ASCII_END: u32 = 126;
 
-pub fn print_shapes(args: &Args) {
+pub fn print_shapes(args: &Args, image: &DynamicImage) {
     let symbols_file = if args.quality {SMALL_SYMBOLS_FILE}   else {BIG_SYMBOLS_FILE};
     let symbols_width =  if args.quality {SMALL_SYMBOLS_WIDTH}  else {BIG_SYMBOLS_WIDTH};
     let symbols_height = if args.quality {SMALL_SYMBOLS_HEIGHT} else {BIG_SYMBOLS_HEIGHT};
@@ -22,14 +22,14 @@ pub fn print_shapes(args: &Args) {
     let symbols = symbols.as_luma8().unwrap();
     
     // One pixel per character.
-    let colors = args.image_file.as_ref().unwrap().resize_exact(
+    let colors = image.resize_exact(
         args.width,
         args.height, 
         if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}
     );
 
     // WxH pixels per character, according to the selected quality.
-    let image = args.image_file.as_ref().unwrap().resize_exact(
+    let image = image.resize_exact(
         args.width * symbols_width,
         args.height * symbols_height, 
         if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}

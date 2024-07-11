@@ -1,4 +1,4 @@
-use image::{imageops::{dither, BiLevel}, GenericImageView};
+use image::{imageops::{dither, BiLevel}, DynamicImage, GenericImageView};
 
 use crate::{colors::{reset_color, set_black_background, set_color_full_brightness}, Args};
 
@@ -10,9 +10,7 @@ const WEIGHTS: [[u8; 2]; 4] = [
     [0x40, 0x80]
 ];
 
-pub fn print_braille(args: &Args) {
-    let image = args.image_file.as_ref().unwrap();
-    
+pub fn print_braille(args: &Args, image: &DynamicImage) {
     // one pixel per symbol
     let colors = image.resize_exact( 
         args.width, 

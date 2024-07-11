@@ -1,4 +1,4 @@
-use image::{GenericImageView, Rgba};
+use image::{DynamicImage, GenericImageView, Rgba};
 
 use crate::{colors::{reset_color, set_black_background, set_color_full_brightness}, Args};
 
@@ -43,8 +43,8 @@ pub fn char_from_color(col: Rgba<u8>, args: &Args) -> char {
     char_from_luminance(luminance, args.quality)
 }
 
-pub fn print_luminance(args: &Args) {
-    let scaled = args.image_file.as_ref().unwrap().resize_exact(
+pub fn print_luminance(args: &Args, image: &DynamicImage) {
+    let scaled = image.resize_exact(
         args.width,
         args.height, 
         if args.filter {image::imageops::FilterType::Triangle} else {image::imageops::FilterType::Nearest}

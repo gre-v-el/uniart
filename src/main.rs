@@ -4,14 +4,21 @@ mod pixels_printer;
 mod braille_printer;
 mod edges_printer;
 mod shape_printer;
+mod image_file;
+mod gif_animator;
+
+use std::process::exit;
 
 use clap::Parser;
-use image::{io::Reader, DynamicImage, ImageError};
+use gif_animator::animate_gif;
+use image::{DynamicImage, ImageError};
+
+use image_file::ImageFile;
 
 const MODES: [&str; 6] = ["luminance", "pixels", "double-pixels", "braille", "edges", "shapes"];
 
 /// CLI app to display images in the terminal in different ways
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[command(version = "1.0", author = "Gabriel Myszkier <myszkier.gabriel@gmail.com>", about = "Converts images to ascii art")]
 #[group()]
 struct Args {
@@ -66,35 +73,30 @@ struct Args {
     #[arg(short, long, help_heading = "Image manipulation")]
     filter: bool,
 
+
     // Not initialized by clap, filled later.
     #[clap(skip)]
     height: u32,
+
     #[clap(skip)]
-    image_file: Option<DynamicImage>,
+    image_file: Option<ImageFile>,
+
+    #[clap(skip)]
+    printer: Option<fn(&Args, &DynamicImage) -> ()>
 }
 
 impl Args {
     fn normalize(&mut self) -> Result<(), ImageError> {
-        // If the width is set to 0, fill the terminal width.
-        if self.width == 0 {
-            self.width = match term_size::dimensions() {
-                Some((w, _)) => w as u32,
-                None => {100},
-            }
-        }
-
-        // Open image file.
-        let reader = Reader::open(&self.image)?.with_guessed_format()?;
-        println!("{:?}", reader.format());
-        self.image_file = Some(reader.decode()?);
-        let img_ref = self.image_file.as_ref().unwrap();
-
-        // Calculate the dimensions of the image in characters.
-        let (w, h) = (img_ref.width() as f32, img_ref.height() as f32);
-        self.height = (h/w*self.width as f32 / self.aspect) as u32;
-
         if self.truecolor {
             self.colors = true;
+        }
+
+        // If the width is set to 0, fill the terminal width.
+        if self.width == 0 {
+            self.width = match termion::terminal_size() {
+                Ok((w, _)) => w as u32,
+                Err(_) => {100},
+            }
         }
 
         // If the mode is not valid, try to find a mode that starts with the given string.
@@ -102,23 +104,56 @@ impl Args {
             let mode = MODES.iter().find(|&m| m.starts_with(&self.mode));
             match mode {
                 Some(m) => self.mode = m.to_string(),
-                None => {},
+                None => {
+                    eprintln!("Invalid mode.");
+                    exit(1);
+                },
             }
         }
+
+        // Set the printer function based on the mode.
+        self.printer = Some(
+            match self.mode.as_str() {
+                "luminance" =>     luminance_printer::print_luminance,
+                "pixels" =>        pixels_printer::print_pixels,
+                "double-pixels" => pixels_printer::print_double_pixels,
+                "braille" =>       braille_printer::print_braille,
+                "edges" =>         edges_printer::print_edges,
+                "shapes" =>        shape_printer::print_shapes,
+                _ => {
+                    eprintln!("Invalid mode.");
+                    exit(1);
+                }
+            });
+
+        // Open image file.
+        self.image_file = Some(ImageFile::open(&self.image)?);
+        
+        // Calculate the dimensions of the image in characters.
+        let img_ref = self.image_file.as_ref().unwrap();
+        let (w, h) = img_ref.dimensions();
+        let (w, h) = (w as f32, h as f32);
+        self.height = (h/w*self.width as f32 / self.aspect) as u32;
 
         Ok(())
     }
 
     fn realize(&self) {
-        // Choose the correct printer based on the mode.
-        match self.mode.as_str() {
-            "luminance" =>     luminance_printer::print_luminance(&self),
-            "pixels" =>        pixels_printer::print_pixels(&self),
-            "double-pixels" => pixels_printer::print_double_pixels(&self),
-            "braille" =>       braille_printer::print_braille(&self),
-            "edges" =>         edges_printer::print_edges(&self),
-            "shapes" =>        shape_printer::print_shapes(&self),
-            _ => eprintln!("Invalid mode.")
+        match &self.image_file {
+            Some(ImageFile::Image(image)) => {
+                // Just print the image.
+                (self.printer.unwrap())(self, image);
+            },
+            Some(ImageFile::Gif(frames, dims)) => {
+                animate_gif(self, frames, *dims);
+            },
+            Some(ImageFile::Video) => {
+                todo!()
+            },
+            None => {
+                eprintln!("Error opening image file.");
+                exit(1);
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ mod edges_printer;
 mod shape_printer;
 
 use clap::Parser;
-use image::{DynamicImage, ImageError};
+use image::{io::Reader, DynamicImage, ImageError};
 
 const MODES: [&str; 6] = ["luminance", "pixels", "double-pixels", "braille", "edges", "shapes"];
 
@@ -74,7 +74,7 @@ struct Args {
 }
 
 impl Args {
-    fn validate(&mut self) -> Result<(), ImageError> {
+    fn normalize(&mut self) -> Result<(), ImageError> {
         // If the width is set to 0, fill the terminal width.
         if self.width == 0 {
             self.width = match term_size::dimensions() {
@@ -83,9 +83,13 @@ impl Args {
             }
         }
 
-        // Open image file and calculate height in characters.
-        self.image_file = Some(image::open(&self.image)?);
+        // Open image file.
+        let reader = Reader::open(&self.image)?.with_guessed_format()?;
+        println!("{:?}", reader.format());
+        self.image_file = Some(reader.decode()?);
         let img_ref = self.image_file.as_ref().unwrap();
+
+        // Calculate the dimensions of the image in characters.
         let (w, h) = (img_ref.width() as f32, img_ref.height() as f32);
         self.height = (h/w*self.width as f32 / self.aspect) as u32;
 
@@ -122,7 +126,7 @@ impl Args {
 fn main() {
     let mut args = Args::parse();
 
-    if let Err(e) = args.validate() {
+    if let Err(e) = args.normalize() {
         eprintln!("{}", e);
         return;
     }

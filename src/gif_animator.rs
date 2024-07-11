@@ -1,4 +1,4 @@
-use std::{io::Write, sync::{atomic::{AtomicBool, Ordering}, Arc}};
+use std::{io::Write, sync::{atomic::{AtomicBool, Ordering}, Arc}, thread, time::Instant};
 
 use image::DynamicImage;
 use termion::{cursor::DetectCursorPos, raw::IntoRawMode};
@@ -35,10 +35,19 @@ pub fn animate_gif(args: &Args, frames: &Vec<GifFrame>, dims: (u32, u32)) {
     
     // Animate.
     let mut canvas = DynamicImage::new_rgba8(dims.0, dims.1);
-    
+    let mut last_frame = Instant::now();
+
     let mut i = 0;
     while r.load(Ordering::SeqCst) {
         let frame = &frames[i];
+
+        if last_frame.elapsed() >= frame.dalay_as_duration() {
+            last_frame = Instant::now();
+        }
+        else {
+            thread::sleep(frame.dalay_as_duration() - last_frame.elapsed());
+        }
+        
         image::imageops::overlay(&mut canvas, &frame.image, frame.left as i64, frame.top as i64);
         print!("{}", termion::cursor::Goto(origin.0, origin.1));
         (args.printer.unwrap())(args, &canvas);

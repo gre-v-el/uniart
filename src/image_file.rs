@@ -9,6 +9,13 @@ pub struct GifFrame {
     pub left: u32,
 }
 
+impl GifFrame {
+    pub fn dalay_as_duration(&self) -> std::time::Duration {
+        let (num, denum) = self.delay.numer_denom_ms();
+        std::time::Duration::from_millis((num / denum) as u64)
+    }
+}
+
 pub enum ImageFile {
     Image(DynamicImage), Gif(Vec<GifFrame>, (u32, u32)), Video
 }

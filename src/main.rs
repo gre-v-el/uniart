@@ -31,7 +31,7 @@ struct Args {
     #[arg(short, long, default_value_t = String::from("shapes"), help_heading = "Output customization")]
     mode: String,
     
-    /// Sets the width of the output. If set to 0 it will fill the terminal width.
+    /// Sets the width of the output. If set to 0 it will fill the terminal.
     /// 
     /// If the terminal width cannot be determined, the default value will be used.
     #[arg(short, long, default_value_t = 100, help_heading = "Output customization")]
@@ -91,14 +91,6 @@ impl Args {
             self.colors = true;
         }
 
-        // If the width is set to 0, fill the terminal width.
-        if self.width == 0 {
-            self.width = match termion::terminal_size() {
-                Ok((w, _)) => w as u32,
-                Err(_) => {100},
-            }
-        }
-
         // If the mode is not valid, try to find a mode that starts with the given string.
         if !MODES.contains(&self.mode.as_str()) {
             let mode = MODES.iter().find(|&m| m.starts_with(&self.mode));
@@ -133,7 +125,25 @@ impl Args {
         let img_ref = self.image_file.as_ref().unwrap();
         let (w, h) = img_ref.dimensions();
         let (w, h) = (w as f32, h as f32);
-        self.height = (h/w*self.width as f32 / self.aspect) as u32;
+
+        if self.width > 0 {
+            self.height = (h/w*self.width as f32 / self.aspect) as u32;
+        }
+        else {
+            let (tw, th) = termion::terminal_size().unwrap_or((100, 100));
+            let (tw, th) = (tw as f32, th as f32);
+            let terminal_aspect = tw / th;
+            let image_aspect = w / h;
+
+            if terminal_aspect/self.aspect > image_aspect {
+                self.height = th as u32 - 2; // Leave some space for the prompt.
+                self.width = (w/h*self.height as f32 * self.aspect) as u32;
+            }
+            else {
+                self.width = tw as u32;
+                self.height = (h/w*self.width as f32 / self.aspect) as u32;
+            }
+        }
 
         Ok(())
     }

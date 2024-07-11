@@ -17,44 +17,38 @@ impl GifFrame {
 }
 
 pub enum ImageFile {
-    Image(DynamicImage), Gif(Vec<GifFrame>, (u32, u32)), Video
+    Image(DynamicImage), Gif(Vec<GifFrame>, (u32, u32))
 }
 
 impl ImageFile {
     pub fn open<P>(path: P) -> Result<Self, ImageError>
     where P: AsRef<Path> {
         let reader = Reader::open(&path)?.with_guessed_format()?;
-        if let Some(format) = reader.format() {
-            match format {
-                image::ImageFormat::Gif => {
-                    drop(reader); // make sure the file is not locked
-                    let gif_file = BufReader::new(File::open(&path)?);
-                    let decoder = GifDecoder::new(gif_file).unwrap();
-                    let dims = decoder.dimensions();
-                    let frames = decoder.into_frames().collect_frames()?;
-                    let frames = frames.into_iter().map(|f| {
-                        let delay = f.delay();
-                        let top = f.top();
-                        let left = f.left();
-                    
-                        GifFrame{
-                            image: DynamicImage::ImageRgba8(f.into_buffer()),
-                            delay,
-                            top,
-                            left,
-                        }
-                    }).collect();
+        match reader.format().expect("Invalid format.") {
+            image::ImageFormat::Gif => {
+                drop(reader); // make sure the file is not locked
+                let gif_file = BufReader::new(File::open(&path)?);
+                let decoder = GifDecoder::new(gif_file).unwrap();
+                let dims = decoder.dimensions();
+                let frames = decoder.into_frames().collect_frames()?;
+                let frames = frames.into_iter().map(|f| {
+                    let delay = f.delay();
+                    let top = f.top();
+                    let left = f.left();
+                
+                    GifFrame{
+                        image: DynamicImage::ImageRgba8(f.into_buffer()),
+                        delay,
+                        top,
+                        left,
+                    }
+                }).collect();
 
-                    Ok(ImageFile::Gif(frames, dims))
-                },
-                _ => {
-                    Ok(ImageFile::Image(reader.decode()?))
-                }
+                Ok(ImageFile::Gif(frames, dims))
+            },
+            _ => {
+                Ok(ImageFile::Image(reader.decode()?))
             }
-        }
-        else {
-            // check for videos
-            todo!()
         }
     }
 
@@ -62,7 +56,6 @@ impl ImageFile {
         match self {
             ImageFile::Image(image) => (image.width(), image.height()),
             ImageFile::Gif(_, dims) => *dims,
-            ImageFile::Video => todo!()
         }
     }
 }

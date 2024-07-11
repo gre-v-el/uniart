@@ -117,6 +117,9 @@ impl Args {
                     exit(1);
                 }
             });
+        if self.mode == "pixels" || self.mode == "double-pixels" {
+            self.colors = true;
+        }
 
         // Open image file.
         self.image_file = Some(ImageFile::open(&self.image)?);
@@ -156,9 +159,6 @@ impl Args {
             },
             Some(ImageFile::Gif(frames, dims)) => {
                 animate_gif(self, frames, *dims);
-            },
-            Some(ImageFile::Video) => {
-                todo!()
             },
             None => {
                 eprintln!("Error opening image file.");

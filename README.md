@@ -9,7 +9,8 @@ uniart mandelbrot.png -m luminance -tbfq
 uniart mandelbrot.png -tbf -m double-pixels
 uniart mandelbrot.png -tbf -m braille
 ```
-![mandelbrot](./examples/mandelbrots.png)
+![Screenshots of mandelbrot renderings](/examples/mandelbrots.png)
+
 Each image is a screenshot of a text terminal.
 
 #### Animations
@@ -19,8 +20,9 @@ uniart mandelbrot.gif -m luminance -tbf
 uniart mandelbrot.gif -tbf -m double-pixels
 uniart mandelbrot.gif -tbf -m braille
 ```
-![mandelbrot](./examples/mandelbrots.gif)
-These are real time recordings of the terminal.
+![Recordings of mandelbrot zoom animations](/examples/mandelbrots.gif)
+
+These are real time recordings of the terminal. All gifs are rendered in the same resolution.
 
 ## Features
 * Convert images and gifs to characters on the terminal in one of the following modes:
@@ -35,3 +37,25 @@ These are real time recordings of the terminal.
 * Can display images in color. (256 ansi escape sequences color codes, or 24bit true color in some terminals)
 * Can be also used in light themed terminals with brightness inversion.
 
+## Usage
+```
+uniart [OPTIONS] <IMAGE>
+
+<IMAGE>  Path to the image file
+
+Output customization:
+  -m, --mode <MODE>        Mode. (one of: luminance, pixels, double-pixels, braille, edges, shapes) [default: shapes]
+  -w, --width <WIDTH>      Sets the width of the output. If set to 0 it will fill the terminal window [default: 0]
+  -a, --aspect <ASPECT>    Sets the aspect ratio of the terminal font [default: 2]
+  -p, --palette <PALETTE>  Sets the character palette to use. Works in shapes mode.
+
+Color options:
+  -c, --colors      Outputs the image in color.
+  -t, --truecolor   Uses truecolor escape sequences. (only works in some terminals)
+  -b, --background  Sets the background color to black.
+
+Image manipulation:
+  -i, --invert   Inverts the image brightness. (useful in white-background terminals)
+  -q, --quality  Switch the quality of output. (only works for luminance, edges and shapes modes)
+  -f, --filter   Uses linear filter instead of nearest neighbor when scaling the image.
+```

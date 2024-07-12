@@ -1,9 +1,35 @@
 # Unicode Art
 ### The better ascii art
 
-## Examples
-#### Images
+# Installation
+
+### Using precompiled binaries
+Download the precompiled binary for your platform from the [releases page](https://github.com/gre-v-el/uniart/releases) and place it in your path.
+
+### From crates.io
+You can install `uniart` directly from [crates.io](https://crates.io/crates/uniart) using cargo:
+```sh
+cargo install uniart
 ```
+
+### From source
+Alternatively, you can clone the repository and install it manually:
+```sh
+git clone https://github.com/gre-v-el/uniart
+cd uniart
+cargo install --path .
+```
+or
+```sh
+git clone https://github.com/gre-v-el/uniart
+cd uniart
+cargo build --release
+cp target/release/uniart /usr/local/bin
+```
+
+# Examples
+### Images
+```sh
 uniart mandelbrot.png
 uniart mandelbrot.png -m luminance -tbfq
 uniart mandelbrot.png -tbf -m double-pixels
@@ -13,8 +39,8 @@ uniart mandelbrot.png -tbf -m braille
 
 Each image is a screenshot of a text terminal.
 
-#### Animations
-```
+### Animations
+```sh
 uniart mandelbrot.gif
 uniart mandelbrot.gif -m luminance -tbf
 uniart mandelbrot.gif -tbf -m double-pixels
@@ -22,9 +48,9 @@ uniart mandelbrot.gif -tbf -m braille
 ```
 ![Recordings of mandelbrot zoom animations](/examples/mandelbrots.gif)
 
-These are real time recordings of the terminal. All gifs are rendered in the same resolution.
+These are real time recordings of the terminal. All gifs are rendered in the same resolution in characters.
 
-## Features
+# Features
 * Convert images and gifs to characters on the terminal in one of the following modes:
   - `luminance`: Uses the luminance of the pixel to determine the character.
   - `braille`: Uses braille characters to represent the image.
@@ -37,7 +63,7 @@ These are real time recordings of the terminal. All gifs are rendered in the sam
 * Can display images in color. (256 ansi escape sequences color codes, or 24bit true color in some terminals)
 * Can be also used in light themed terminals with brightness inversion.
 
-## Usage
+# Usage
 ```
 uniart [OPTIONS] <IMAGE>
 

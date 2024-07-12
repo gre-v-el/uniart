@@ -32,9 +32,9 @@ struct Args {
     #[arg(short, long, default_value_t = String::from("shapes"), help_heading = "Output customization")]
     mode: String,
     
-    /// Sets the width of the output. If set to 0 it will fill the terminal.
+    /// Sets the width of the output. If set to 0 it will fill the terminal window.
     /// 
-    /// If the terminal width cannot be determined, the default value will be used.
+    /// If the terminal size cannot be determined, 100 will be used.
     #[arg(short, long, default_value_t = 0, help_heading = "Output customization")]
     width: u32,
 
@@ -44,7 +44,7 @@ struct Args {
 
     /// Sets the character palette to use. Works in shapes mode.
     /// 
-    /// Must be subset of "[SPACE],A-Z,a-z,0-9,!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~" (ASCII 32-127)
+    /// Must be subset of [SPACE], A-Z, a-z, 0-9, !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ (ASCII 32-127)
     #[arg(short, long, help_heading = "Output customization")]
     palette: Option<String>,
 
@@ -185,8 +185,8 @@ impl Args {
                 // Just print the image.
                 (self.printer.unwrap())(self, image);
             },
-            Some(ImageFile::Gif(frames, dims)) => {
-                animate_gif(self, frames, *dims);
+            Some(ImageFile::Gif(frames, _)) => {
+                animate_gif(self, frames);
             },
             None => {
                 eprintln!("Error opening image file.");

@@ -1,11 +1,10 @@
 use std::{io::Write, sync::{atomic::{AtomicBool, Ordering}, Arc}, thread, time::Instant};
 
-use image::DynamicImage;
 use termion::{cursor::DetectCursorPos, raw::IntoRawMode};
 
 use crate::{image_file::GifFrame, Args};
 
-pub fn animate_gif(args: &Args, frames: &Vec<GifFrame>, dims: (u32, u32)) {
+pub fn animate_gif(args: &Args, frames: &Vec<GifFrame>) {
     // Make sure the cursor is shown when the program exits.
     let running = Arc::new(AtomicBool::new(true));
     let r = Arc::clone(&running);

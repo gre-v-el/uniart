@@ -5,8 +5,6 @@ use image::{codecs::gif::GifDecoder, io::Reader, AnimationDecoder, Delay, Dynami
 pub struct GifFrame {
     pub image: DynamicImage, 
     pub delay: Delay,
-    pub top: u32,
-    pub left: u32,
 }
 
 impl GifFrame {
@@ -32,15 +30,9 @@ impl ImageFile {
                 let dims = decoder.dimensions();
                 let frames = decoder.into_frames().collect_frames()?;
                 let frames = frames.into_iter().map(|f| {
-                    let delay = f.delay();
-                    let top = f.top();
-                    let left = f.left();
-                
                     GifFrame{
+                        delay: f.delay(),
                         image: DynamicImage::ImageRgba8(f.into_buffer()),
-                        delay,
-                        top,
-                        left,
                     }
                 }).collect();
 

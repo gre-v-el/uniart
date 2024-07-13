@@ -1,6 +1,6 @@
 use std::{io::Write, sync::{atomic::{AtomicBool, Ordering}, Arc}, thread, time::Instant};
 
-use termion::{cursor::DetectCursorPos, raw::IntoRawMode};
+use crossterm::ExecutableCommand;
 
 use crate::{image_file::GifFrame, Args};
 
@@ -12,12 +12,14 @@ pub fn animate_gif(args: &Args, frames: &Vec<GifFrame>) {
     ctrlc::set_handler(move || {
         running.store(false, Ordering::SeqCst);
         // Show cursor when exiting
-        print!("{}", termion::cursor::Show);
-        std::io::stdout().flush().unwrap();
+        let mut stdout = std::io::stdout();
+        stdout.execute(crossterm::cursor::Show).expect("Failed to show cursor.");
+        stdout.flush().unwrap();
     }).expect("Failed to set Ctrl-C handler.");
 
+    let mut stdout = std::io::stdout();
     // Hide cursor.
-    print!("{}", termion::cursor::Hide);
+    stdout.execute(crossterm::cursor::Hide).expect("Failed to hide cursor.");
 
     // Prepare the space for the animation.
     for _ in 0..args.height {
@@ -25,12 +27,10 @@ pub fn animate_gif(args: &Args, frames: &Vec<GifFrame>) {
     }
 
     // Return the cursor to the top of the canvas.
-    print!("{}", termion::cursor::Up(args.height as u16));
+    stdout.execute(crossterm::cursor::MoveUp(args.height as u16)).expect("Failed to restore cursor position.");
 
     // Remember the start cursor position.
-    let origin = 
-    std::io::stdout().into_raw_mode().expect("Failed to switch to raw mode.")
-        .cursor_pos().expect("Failed to get cursor position.");
+    let origin = crossterm::cursor::position().expect("Failed to get cursor position.");
     
     // Animate.
     let mut last_frame = Instant::now();
@@ -44,12 +44,12 @@ pub fn animate_gif(args: &Args, frames: &Vec<GifFrame>) {
         }
         last_frame = Instant::now();
         
-        print!("{}", termion::cursor::Goto(origin.0, origin.1));
+        stdout.execute(crossterm::cursor::MoveTo(origin.0, origin.1)).expect("Failed to move cursor.");
         (args.printer.unwrap())(args, &frame.image);
         i = (i + 1) % frames.len();
 
     }
 
-    print!("{}", termion::cursor::Show);
+    stdout.execute(crossterm::cursor::Show).expect("Failed to show cursor.");
     std::io::stdout().flush().unwrap();
 }

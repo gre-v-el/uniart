@@ -161,7 +161,7 @@ impl Args {
             self.height = (h/w*self.width as f32 / self.aspect) as u32;
         }
         else {
-            let (tw, th) = termion::terminal_size().unwrap_or((100, 100));
+            let (tw, th) = crossterm::terminal::size().unwrap_or((100, 100));
             let (tw, th) = (tw as f32, th as f32);
             let terminal_aspect = tw / th;
             let image_aspect = w / h;

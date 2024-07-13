@@ -3,6 +3,9 @@
 
 # Installation
 
+### From releases
+You can download the binary for your platform from the [releases page](https://github.com/gre-v-el/uniart/releases) and place it in your path.
+
 ### From crates.io
 You can install `uniart` directly from [crates.io](https://crates.io/crates/uniart) using cargo:
 ```sh
